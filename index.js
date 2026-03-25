@@ -543,5 +543,7 @@ app.get("/notifications-history", (req, res) => {
   });
 });
 
-
+app.get("/", (req, res) => {
+  res.send("Backend is running 🔥");
+});
 
