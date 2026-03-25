@@ -544,24 +544,25 @@ app.get("/notifications-history", (req, res) => {
 });
 
 setInterval(() => {
+
   db.query(
     "SELECT * FROM notifications WHERE status='scheduled' AND scheduled_at <= NOW()",
     async (err, rows) => {
 
       if (err) {
-        console.log(err);
+        console.log("Notification Error ❌", err);
         return;
       }
 
       if (!rows || rows.length === 0) return;
 
       try {
-        const [settings] = await db.promise().query(
-          "SELECT * FROM settings LIMIT 1"
-        );
-        const s = settings[0];
-
         for (let n of rows) {
+
+          const settings = await db.promise().query("SELECT * FROM settings LIMIT 1");
+          const s = settings[0][0];
+
+          if (!s) continue;
 
           const response = await axios.post(
             "https://onesignal.com/api/v1/notifications",
@@ -575,20 +576,21 @@ setInterval(() => {
             },
             {
               headers: {
-                Authorization: "Basic " + s.onesignal_api_key,
+                "Authorization": "Basic " + s.onesignal_api_key,
               },
             }
           );
 
-          await db.promise().query(
+          db.query(
             "UPDATE notifications SET status='sent', recipients=? WHERE id=?",
             [response.data.recipients, n.id]
           );
         }
-
-      } catch (error) {
-        console.log("Notification Error:", error.message);
+      } catch (e) {
+        console.log("Loop Error ❌", e);
       }
     }
   );
+
 }, 10000);
+
