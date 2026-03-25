@@ -57,7 +57,7 @@ db.getConnection((err, conn) => {
   }
 });
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 console.log("BEFORE LISTEN 🔥");
 
