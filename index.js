@@ -57,14 +57,22 @@ db.getConnection((err, conn) => {
   }
 });
 
+// 1. تحديد الـ Port مع الأولوية لمتغير البيئة الخاص بـ Railway
 const PORT = process.env.PORT || 3000;
 
-console.log("BEFORE LISTEN 🔥");
-
+// 2. تشغيل السيرفر فوراً (عشان Railway يحس إنه شغال وما يقفلوش)
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Server running 🔥");
+  console.log(`✅ Server is active on port ${PORT}`);
+  
+  // 3. تجربة الاتصال بقاعدة البيانات بعد تشغيل السيرفر
+  db.query("SELECT 1", (err) => {
+    if (err) {
+      console.log("❌ DB Connection Error:", err.message);
+    } else {
+      console.log("🔥 DB Connected Successfully");
+    }
+  });
 });
-
 
 // ================= 🔐 Middleware =================
 
