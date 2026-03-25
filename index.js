@@ -1,3 +1,13 @@
+process.on("uncaughtException", (err) => {
+  console.log("CRASH 💀", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.log("PROMISE ERROR 💀", err);
+});
+
+
+
 const express = require("express");
 const app = express();
 const mysql = require("mysql2");
@@ -48,6 +58,8 @@ db.getConnection((err, conn) => {
 });
 
 const PORT = process.env.PORT;
+
+console.log("BEFORE LISTEN 🔥");
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running 🔥");
