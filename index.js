@@ -8,13 +8,14 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const axios = require("axios");
 
-const SECRET = "dalel_secret_key";
+const SECRET = process.env.SECRET || "dalel_secret_key";
 
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
 
+// ✅ DB CONNECTION (FIXED)
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
@@ -23,9 +24,13 @@ const db = mysql.createPool({
   port: process.env.MYSQLPORT,
 });
 
-db.connect((err) => {
-  if (err) console.log(err);
-  else console.log("MySQL Connected 🔥");
+db.getConnection((err, conn) => {
+  if (err) {
+    console.log("DB ERROR ❌", err);
+  } else {
+    console.log("DB Connected 🔥");
+    conn.release();
+  }
 });
 
 const PORT = process.env.PORT || 3000;
@@ -67,7 +72,6 @@ app.post("/register", async (req, res) => {
   }
 
   try {
-    // 🔍 check duplicate
     const [rows] = await db.promise().query(
       "SELECT * FROM users WHERE username = ?",
       [username]
@@ -77,12 +81,11 @@ app.post("/register", async (req, res) => {
       return res.send("User already exists ❌");
     }
 
-    // 🔐 hash password
     const hashed = await bcrypt.hash(password, 10);
 
     await db.promise().query(
       "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-      [username, hashed, "user"] // 👈 default user
+      [username, hashed, "user"]
     );
 
     res.send("Registered Successfully 🔥");
@@ -135,8 +138,9 @@ app.post("/upload", upload.single("image"), (req, res) => {
   if (!req.file)
     return res.status(400).json({ message: "No file" });
 
+  // ✅ FIXED URL
   const imageUrl =
-    "http://127.0.0.1:3000/uploads/" + req.file.filename;
+    req.protocol + "://" + req.get("host") + "/uploads/" + req.file.filename;
 
   res.json({ imageUrl });
 });
@@ -159,6 +163,7 @@ app.post("/add-category", verifyToken, isAdmin, (req, res) => {
 
 app.get("/categories", (req, res) => {
   db.query("SELECT * FROM categories", (err, result) => {
+    if (err) return res.status(500).json(err);
     res.json(result);
   });
 });
@@ -186,6 +191,7 @@ app.put("/update-category/:id", verifyToken, isAdmin, (req, res) => {
     }
   );
 });
+
 
 
 // ================= 📢 Ads =================
