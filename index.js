@@ -7,12 +7,12 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const axios = require("axios");
+const fs = require("fs");
 
 const SECRET = process.env.SECRET || "dalel_secret_key";
 
 app.use(cors());
 app.use(express.json());
-const fs = require("fs");
 
 // 🔥 create uploads folder if not exists
 if (!fs.existsSync("uploads")) {
@@ -28,11 +28,13 @@ const db = mysql.createPool({
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
   port: process.env.MYSQLPORT,
+  waitForConnections: true,
+  connectionLimit: 10,
 });
 
 db.getConnection((err, conn) => {
   if (err) {
-    console.log("DB ERROR ❌", err);
+    console.log("DB ERROR ❌", err.message);
   } else {
     console.log("DB Connected 🔥");
     conn.release();
@@ -41,7 +43,7 @@ db.getConnection((err, conn) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log("Server running 🔥");
+  console.log("Server running on port " + PORT + " 🔥");
 });
 
 
@@ -105,16 +107,13 @@ app.post("/register", async (req, res) => {
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
-  const sql = "SELECT * FROM users WHERE username = ?";
-
-  db.query(sql, [username], async (err, result) => {
+  db.query("SELECT * FROM users WHERE username = ?", [username], async (err, result) => {
     if (err) return res.status(500).json(err);
 
     if (result.length === 0)
       return res.json({ success: false });
 
     const user = result[0];
-
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) return res.json({ success: false });
@@ -144,7 +143,6 @@ app.post("/upload", upload.single("image"), (req, res) => {
   if (!req.file)
     return res.status(400).json({ message: "No file" });
 
-  // ✅ FIXED URL
   const imageUrl =
     req.protocol + "://" + req.get("host") + "/uploads/" + req.file.filename;
 
@@ -197,7 +195,6 @@ app.put("/update-category/:id", verifyToken, isAdmin, (req, res) => {
     }
   );
 });
-
 
 
 // ================= 📢 Ads =================
