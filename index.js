@@ -14,11 +14,17 @@ const SECRET = process.env.SECRET || "dalel_secret_key";
 app.use(cors());
 app.use(express.json());
 
+
 // 🔥 create uploads folder if not exists
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
 }
 app.use("/uploads", express.static("uploads"));
+
+app.get("/", (req, res) => {
+  res.send("API running 🔥");
+});
+
 
 
 // ✅ DB CONNECTION (FIXED)
