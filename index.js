@@ -543,54 +543,5 @@ app.get("/notifications-history", (req, res) => {
   });
 });
 
-// setInterval(() => {
 
-//   db.query(
-//     "SELECT * FROM notifications WHERE status='scheduled' AND scheduled_at <= NOW()",
-//     async (err, rows) => {
-
-//       if (err) {
-//         console.log("Notification Error ❌", err);
-//         return;
-//       }
-
-//       if (!rows || rows.length === 0) return;
-
-//       try {
-//         for (let n of rows) {
-
-//           const settings = await db.promise().query("SELECT * FROM settings LIMIT 1");
-//           const s = settings[0][0];
-
-//           if (!s) continue;
-
-//           const response = await axios.post(
-//             "https://onesignal.com/api/v1/notifications",
-//             {
-//               app_id: s.onesignal_app_id,
-//               included_segments: ["All"],
-//               headings: { en: n.title },
-//               contents: { en: n.message },
-//               big_picture: n.image,
-//               data: { url: n.url, openType: n.open_type }
-//             },
-//             {
-//               headers: {
-//                 "Authorization": "Basic " + s.onesignal_api_key,
-//               },
-//             }
-//           );
-
-//           db.query(
-//             "UPDATE notifications SET status='sent', recipients=? WHERE id=?",
-//             [response.data.recipients, n.id]
-//           );
-//         }
-//       } catch (e) {
-//         console.log("Loop Error ❌", e);
-//       }
-//     }
-//   );
-
-// }, 10000);
 
