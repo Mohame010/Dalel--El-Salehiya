@@ -191,11 +191,11 @@ app.delete("/delete-route/:id", verifyToken, isAdmin, (req, res) => {
 
 
 app.put("/update-route/:id", verifyToken, isAdmin, (req, res) => {
-  const { type, from_location, to_location, price } = req.body;
+  const { type, from_location, to_location, price, category_id } = req.body;
 
   db.query(
-    "UPDATE transport_routes SET type=?, from_location=?, to_location=?, price=? WHERE id=?",
-    [type, from_location, to_location, price, req.params.id],
+    "UPDATE transport_routes SET type=?, from_location=?, to_location=?, price=?, category_id=? WHERE id=?",
+    [type, from_location, to_location, price, category_id, req.params.id],
     (err) => {
       if (err) return res.status(500).json(err);
       res.json("Updated 🔥");
