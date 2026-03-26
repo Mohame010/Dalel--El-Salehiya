@@ -570,6 +570,60 @@ app.get("/notifications-history", (req, res) => {
   });
 });
 
+
+
+const checkNotifications = async () => {
+  try {
+    const [notifications] = await db.promise().query(
+      "SELECT * FROM notifications WHERE status='scheduled' AND scheduled_at <= NOW()"
+    );
+
+    if (!notifications.length) return;
+
+    const [settings] = await db.promise().query("SELECT * FROM settings LIMIT 1");
+    const s = settings[0];
+    if (!s) return;
+
+    for (let n of notifications) {
+      try {
+        const response = await axios.post(
+          "https://onesignal.com/api/v1/notifications",
+          {
+            app_id: s.onesignal_app_id,
+            included_segments: ["All"],
+            headings: { en: n.title },
+            contents: { en: n.message },
+            big_picture: n.image,
+            data: { url: n.url, openType: n.open_type }
+          },
+          {
+            headers: {
+              "Authorization": "Basic " + s.onesignal_api_key
+            },
+            timeout: 10000,
+          }
+        );
+
+        await db.promise().query(
+          "UPDATE notifications SET status='sent', recipients=? WHERE id=?",
+          [response.data.recipients || 0, n.id]
+        );
+
+      } catch (error) {
+        console.error(`Error sending notification ${n.id}:`, error.message);
+      }
+    }
+
+  } catch (err) {
+    console.error("Cron Job Error ❌", err);
+  } finally {
+    setTimeout(checkNotifications, 30000);
+  }
+};
+
+checkNotifications();
+
+
 app.get("/", (req, res) => {
   res.send("Backend is running 🔥");
 });
