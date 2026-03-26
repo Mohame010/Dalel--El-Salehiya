@@ -100,27 +100,27 @@ function isAdmin(req, res, next) {
 // ================= 🔐 Auth =================
 
 app.post("/register", async (req, res) => {
-  const { username, password } = req.body;
+  const { name, phone, password } = req.body;
 
-  if (!username || !password) {
+  if (!name || !phone || !password) {
     return res.status(400).send("Missing data ❌");
   }
 
   try {
     const [rows] = await db.promise().query(
-      "SELECT * FROM users WHERE username = ?",
-      [username]
+      "SELECT * FROM users WHERE phone = ?",
+      [phone]
     );
 
     if (rows.length > 0) {
-      return res.send("User already exists ❌");
+      return res.send("Phone already exists ❌");
     }
 
     const hashed = await bcrypt.hash(password, 10);
 
     await db.promise().query(
-      "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-      [username, hashed, "user"]
+      "INSERT INTO users (name, phone, password, role) VALUES (?, ?, ?, ?)",
+      [name, phone, hashed, "user"]
     );
 
     res.send("Registered Successfully 🔥");
@@ -132,15 +132,21 @@ app.post("/register", async (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const { username, password } = req.body;
+  const { phone, username, password } = req.body;
 
-  db.query("SELECT * FROM users WHERE username = ?", [username], async (err, result) => {
+  // 🔥 نحدد هنستخدم ايه
+  const value = phone || username;
+
+  const sql = "SELECT * FROM users WHERE phone = ? OR username = ?";
+
+  db.query(sql, [value, value], async (err, result) => {
     if (err) return res.status(500).json(err);
 
     if (result.length === 0)
       return res.json({ success: false });
 
     const user = result[0];
+
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) return res.json({ success: false });
