@@ -271,12 +271,16 @@ app.put("/update-ad/:id", verifyToken, isAdmin, (req, res) => {
 // ================= 🏪 Places =================
 
 app.post("/add-place", verifyToken, isAdmin, (req, res) => {
-  const { name, image, address, phone, whatsapp, category_id } = req.body;
+  const { 
+    name, image, address, phone, whatsapp, category_id,
+    open_time, close_time, working_days
+  } = req.body;
 
   db.query(
-    `INSERT INTO places (name, image, address, phone, whatsapp, category_id)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [name, image, address, phone, whatsapp, category_id],
+    `INSERT INTO places 
+    (name, image, address, phone, whatsapp, category_id, open_time, close_time, working_days)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name, image, address, phone, whatsapp, category_id, open_time, close_time, working_days],
     (err) => {
       if (err) return res.status(500).json(err);
       res.json("Place Added 🔥");
