@@ -102,64 +102,116 @@ function isAdmin(req, res, next) {
 app.post("/register", async (req, res) => {
   const { name, phone, password } = req.body;
 
+  // 🔥 Validation
   if (!name || !phone || !password) {
-    return res.status(400).send("Missing data ❌");
+    return res.status(400).json({
+      success: false,
+      message: "Missing data ❌"
+    });
   }
 
   try {
+    // 🔍 Check duplicate phone
     const [rows] = await db.promise().query(
       "SELECT * FROM users WHERE phone = ?",
       [phone]
     );
 
     if (rows.length > 0) {
-      return res.send("Phone already exists ❌");
+      return res.status(400).json({
+        success: false,
+        message: "Phone already exists ❌"
+      });
     }
 
+    // 🔐 Hash password
     const hashed = await bcrypt.hash(password, 10);
 
+    // 💾 Insert user
     await db.promise().query(
       "INSERT INTO users (name, phone, password, role) VALUES (?, ?, ?, ?)",
       [name, phone, hashed, "user"]
     );
 
-    res.send("Registered Successfully 🔥");
+    // ✅ Success
+    res.json({
+      success: true,
+      message: "Registered Successfully 🔥"
+    });
 
   } catch (err) {
     console.log(err);
-    res.status(500).send("Server error 💀");
+
+    res.status(500).json({
+      success: false,
+      message: "Server error 💀"
+    });
   }
 });
 
 
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { phone, username, password } = req.body;
 
-  // 🔥 نحدد هنستخدم ايه
-  const value = phone || username;
+  // 🔥 Validation
+  if ((!phone && !username) || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing data ❌"
+    });
+  }
 
-  const sql = "SELECT * FROM users WHERE phone = ? OR username = ?";
+  try {
+    // 🔍 نحدد هنستخدم phone ولا username
+    const value = phone || username;
 
-  db.query(sql, [value, value], async (err, result) => {
-    if (err) return res.status(500).json(err);
+    // 🔍 نبحث عن المستخدم
+    const [rows] = await db.promise().query(
+      "SELECT * FROM users WHERE phone = ? OR username = ?",
+      [value, value]
+    );
 
-    if (result.length === 0)
-      return res.json({ success: false });
+    if (rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found ❌"
+      });
+    }
 
-    const user = result[0];
+    const user = rows[0];
 
+    // 🔐 مقارنة الباسورد
     const match = await bcrypt.compare(password, user.password);
 
-    if (!match) return res.json({ success: false });
+    if (!match) {
+      return res.status(400).json({
+        success: false,
+        message: "Wrong password ❌"
+      });
+    }
 
+    // 🔑 إنشاء التوكن
     const token = jwt.sign(
       { id: user.id, role: user.role },
       SECRET,
       { expiresIn: "7d" }
     );
 
-    res.json({ success: true, token, user });
-  });
+    // ✅ نجاح
+    res.json({
+      success: true,
+      token,
+      user
+    });
+
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error 💀"
+    });
+  }
 });
 
 
