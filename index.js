@@ -160,11 +160,11 @@ app.post("/login", (req, res) => {
 // ================= 🚌transport_routes =================
 
 app.post("/add-route", verifyToken, isAdmin, (req, res) => {
-  const { type, from_location, to_location, price } = req.body;
+  const { type, from_location, to_location, price, category_id } = req.body;
 
   db.query(
-    "INSERT INTO transport_routes (type, from_location, to_location, price) VALUES (?, ?, ?, ?)",
-    [type, from_location, to_location, price],
+    "INSERT INTO transport_routes (type, from_location, to_location, price, category_id) VALUES (?, ?, ?, ?, ?)",
+    [type, from_location, to_location, price, category_id],
     (err) => {
       if (err) return res.status(500).json(err);
       res.json("Route Added 🔥");
@@ -199,6 +199,16 @@ app.put("/update-route/:id", verifyToken, isAdmin, (req, res) => {
     (err) => {
       if (err) return res.status(500).json(err);
       res.json("Updated 🔥");
+    }
+  );
+});
+
+app.get("/routes-by-category/:id", (req, res) => {
+  db.query(
+    "SELECT * FROM transport_routes WHERE category_id = ?",
+    [req.params.id],
+    (err, result) => {
+      res.json(result);
     }
   );
 });
