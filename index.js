@@ -156,6 +156,54 @@ app.post("/login", (req, res) => {
 });
 
 
+
+// ================= 🚌transport_routes =================
+
+app.post("/add-route", verifyToken, isAdmin, (req, res) => {
+  const { type, from_location, to_location, price } = req.body;
+
+  db.query(
+    "INSERT INTO transport_routes (type, from_location, to_location, price) VALUES (?, ?, ?, ?)",
+    [type, from_location, to_location, price],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json("Route Added 🔥");
+    }
+  );
+});
+
+app.get("/routes", (req, res) => {
+  db.query("SELECT * FROM transport_routes", (err, result) => {
+    res.json(result);
+  });
+});
+
+app.delete("/delete-route/:id", verifyToken, isAdmin, (req, res) => {
+  db.query(
+    "DELETE FROM transport_routes WHERE id = ?",
+    [req.params.id],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json("Deleted 🔥");
+    }
+  );
+});
+
+
+app.put("/update-route/:id", verifyToken, isAdmin, (req, res) => {
+  const { type, from_location, to_location, price } = req.body;
+
+  db.query(
+    "UPDATE transport_routes SET type=?, from_location=?, to_location=?, price=? WHERE id=?",
+    [type, from_location, to_location, price, req.params.id],
+    (err) => {
+      if (err) return res.status(500).json(err);
+      res.json("Updated 🔥");
+    }
+  );
+});
+
+
 // ================= 📦 Upload =================
 
 const storage = multer.diskStorage({
