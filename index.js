@@ -223,10 +223,10 @@ app.post("/login", async (req, res) => {
 // ================= 🚌transport_routes =================
 
 app.post("/add-route", verifyToken, isAdmin, (req, res) => {
-  const { type, from_location, to_location, price, category_id } = req.body;
+  const { type, from_location, to_location, price, category_id, time } = req.body;
 
   db.query(
-    "INSERT INTO transport_routes (type, from_location, to_location, price, category_id) VALUES (?, ?, ?, ?, ?)",
+    "INSERT INTO transport_routes (type, from_location, to_location, price, category_id, time) VALUES (?, ?, ?, ?, ?, ?)"
     [type, from_location, to_location, price, category_id],
     (err) => {
       if (err) return res.status(500).json(err);
@@ -254,10 +254,10 @@ app.delete("/delete-route/:id", verifyToken, isAdmin, (req, res) => {
 
 
 app.put("/update-route/:id", verifyToken, isAdmin, (req, res) => {
-  const { type, from_location, to_location, price, category_id } = req.body;
+  const { type, from_location, to_location, price, category_id, time } = req.body;
 
   db.query(
-    "UPDATE transport_routes SET type=?, from_location=?, to_location=?, price=?, category_id=? WHERE id=?",
+    "UPDATE transport_routes SET type=?, from_location=?, to_location=?, price=?, category_id=?, time=? WHERE id=?"
     [type, from_location, to_location, price, category_id, req.params.id],
     (err) => {
       if (err) return res.status(500).json(err);
