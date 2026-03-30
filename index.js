@@ -23,13 +23,17 @@ const SECRET = process.env.SECRET || "dalel_secret_key";
 
 app.use(cors());
 app.use(express.json());
+app.set("trust proxy", true);
 
 
 // 🔥 create uploads folder if not exists
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
+const uploadPath = "/uploads"; // نفس اللي في Railway
+
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
 }
-app.use("/uploads", express.static("uploads"));
+
+app.use("/uploads", express.static(uploadPath));
 
 app.get("/", (req, res) => {
   res.send("API running 🔥");
@@ -276,7 +280,7 @@ app.get("/routes-by-category/:id", (req, res) => {
 // ================= 📦 Upload =================
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
+  destination: (req, file, cb) => cb(null, "/uploads"),
   filename: (req, file, cb) =>
     cb(null, Date.now() + path.extname(file.originalname)),
 });
@@ -284,13 +288,23 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.post("/upload", upload.single("image"), (req, res) => {
-  if (!req.file)
+  if (!req.file) {
     return res.status(400).json({ message: "No file" });
+  }
 
   const imageUrl =
-    req.protocol + "://" + req.get("host") + "/uploads/" + req.file.filename;
+    req.protocol +
+    "://" +
+    req.get("host") +
+    "/uploads/" +
+    req.file.filename;
 
-  res.json({ imageUrl });
+  console.log("Saved file:", req.file.path);
+
+  res.status(200).json({
+    message: "Upload successful",
+    url: imageUrl,
+  });
 });
 
 
