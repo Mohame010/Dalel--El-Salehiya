@@ -226,11 +226,15 @@ app.post("/add-route", verifyToken, isAdmin, (req, res) => {
   const { type, from_location, to_location, price, category_id, time } = req.body;
 
   db.query(
-    "INSERT INTO transport_routes (type, from_location, to_location, price, category_id, time) VALUES (?, ?, ?, ?, ?, ?)"
-    [type, from_location, to_location, price, category_id],
+    "INSERT INTO transport_routes (type, from_location, to_location, price, category_id, time) VALUES (?, ?, ?, ?, ?, ?)",
+    [type, from_location, to_location, price, category_id, time],
     (err) => {
-      if (err) return res.status(500).json(err);
-      res.json("Route Added 🔥");
+      if (err) {
+        console.log("SQL ERROR ❌", err);
+        return res.status(500).json(err);
+      }
+
+      res.json({ success: true, message: "Route Added 🔥" });
     }
   );
 });
@@ -257,11 +261,15 @@ app.put("/update-route/:id", verifyToken, isAdmin, (req, res) => {
   const { type, from_location, to_location, price, category_id, time } = req.body;
 
   db.query(
-    "UPDATE transport_routes SET type=?, from_location=?, to_location=?, price=?, category_id=?, time=? WHERE id=?"
-    [type, from_location, to_location, price, category_id, req.params.id],
+    "UPDATE transport_routes SET type=?, from_location=?, to_location=?, price=?, category_id=?, time=? WHERE id=?",
+    [type, from_location, to_location, price, category_id, time, req.params.id],
     (err) => {
-      if (err) return res.status(500).json(err);
-      res.json("Updated 🔥");
+      if (err) {
+        console.log("UPDATE ERROR ❌", err);
+        return res.status(500).json(err);
+      }
+
+      res.json({ success: true, message: "Updated 🔥" });
     }
   );
 });
