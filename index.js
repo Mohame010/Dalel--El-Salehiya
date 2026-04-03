@@ -295,7 +295,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.post("/upload", upload.single("image"), (req, res) => {
+app.post("upload", upload.single("image"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No file" });
   }
@@ -304,7 +304,7 @@ app.post("/upload", upload.single("image"), (req, res) => {
     req.protocol +
     "://" +
     req.get("host") +
-    "/uploads/" +
+    "uploads/" +
     req.file.filename;
 
   console.log("Saved file:", req.file.path);
