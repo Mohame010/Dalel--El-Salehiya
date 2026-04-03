@@ -288,7 +288,7 @@ app.get("/routes-by-category/:id", (req, res) => {
 // ================= 📦 Upload =================
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "/uploads"),
+  destination: (req, file, cb) => cb(null, "uploads"),
   filename: (req, file, cb) =>
     cb(null, Date.now() + path.extname(file.originalname)),
 });
