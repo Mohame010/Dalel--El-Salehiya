@@ -287,6 +287,12 @@ app.get("/routes-by-category/:id", (req, res) => {
 
 // ================= 📦 Upload =================
 
+// ✅ تأكد إن فولدر uploads موجود
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads", { recursive: true });
+}
+
+// ✅ إعداد التخزين
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads"),
   filename: (req, file, cb) =>
@@ -295,7 +301,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.post("upload", upload.single("image"), (req, res) => {
+// ✅ Route الرفع
+app.post("/upload", upload.single("image"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No file" });
   }
@@ -304,7 +311,7 @@ app.post("upload", upload.single("image"), (req, res) => {
     req.protocol +
     "://" +
     req.get("host") +
-    "uploads/" +
+    "/uploads/" +
     req.file.filename;
 
   console.log("Saved file:", req.file.path);
