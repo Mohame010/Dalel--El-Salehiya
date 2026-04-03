@@ -21,13 +21,18 @@ const fs = require("fs");
 
 const SECRET = process.env.SECRET || "dalel_secret_key";
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://admin.dalelsalehiya.shop"
+  ]
+}));
 app.use(express.json());
 app.set("trust proxy", true);
 
 
 // 🔥 create uploads folder if not exists
-const uploadPath = "/workspace/uploads";
+const path = require("path");
+const uploadPath = path.join(__dirname, "uploads");
 
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
@@ -286,14 +291,6 @@ app.get("/routes-by-category/:id", (req, res) => {
 
 
 // ================= 📦 Upload =================
-// ✅ إنشاء الفولدر لو مش موجود
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
-}
-
-// ✅ جعل الصور متاحة للعرض
-app.use("/uploads", express.static(uploadPath));
-
 // ✅ إعداد multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadPath),
