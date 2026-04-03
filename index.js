@@ -31,7 +31,6 @@ app.set("trust proxy", true);
 
 
 // 🔥 create uploads folder if not exists
-const path = require("path");
 const uploadPath = path.join(__dirname, "uploads");
 
 if (!fs.existsSync(uploadPath)) {
