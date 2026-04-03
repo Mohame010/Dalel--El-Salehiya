@@ -27,7 +27,7 @@ app.set("trust proxy", true);
 
 
 // 🔥 create uploads folder if not exists
-const uploadPath = "/uploads"; // نفس اللي في Railway
+const uploadPath = "/workspace/uploads";
 
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
@@ -286,15 +286,17 @@ app.get("/routes-by-category/:id", (req, res) => {
 
 
 // ================= 📦 Upload =================
-
-// ✅ تأكد إن فولدر uploads موجود
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads", { recursive: true });
+// ✅ إنشاء الفولدر لو مش موجود
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
 }
 
-// ✅ إعداد التخزين
+// ✅ جعل الصور متاحة للعرض
+app.use("/uploads", express.static(uploadPath));
+
+// ✅ إعداد multer
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads"),
+  destination: (req, file, cb) => cb(null, uploadPath),
   filename: (req, file, cb) =>
     cb(null, Date.now() + path.extname(file.originalname)),
 });
