@@ -42,7 +42,7 @@ if (!fs.existsSync(uploadPath)) {
 app.use("/uploads", express.static(uploadPath));
 
 app.get("/", (req, res) => {
-  res.send("API running 🔥");
+  res.send("انا شغال يا حبيب اخوك🔥🔥");
 });
 
 
@@ -308,11 +308,11 @@ app.post("/upload", upload.single("image"), (req, res) => {
   }
 
   const imageUrl =
-    req.protocol +
-    "://" +
-    req.get("host") +
-    "/uploads/" +
-    req.file.filename;
+  (req.headers["x-forwarded-proto"] || req.protocol) +
+  "://" +
+  req.get("host") +
+  "/uploads/" +
+  req.file.filename;
 
   console.log("Saved file:", req.file.path);
 
