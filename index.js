@@ -680,15 +680,16 @@ app.get("/stats", verifyToken, isAdmin, (req, res) => {
 
 
 app.post("/save-settings", (req, res) => {
-  const { appId, apiKey } = req.body;
+  const { appId, apiKey, requireLogin } = req.body;
 
   db.query("DELETE FROM settings");
 
   db.query(
-    "INSERT INTO settings (onesignal_app_id, onesignal_api_key) VALUES (?, ?)",
-    [appId, apiKey],
+    "INSERT INTO settings (onesignal_app_id, onesignal_api_key, require_login) VALUES (?, ?, ?)",
+    [appId, apiKey, requireLogin ? 1 : 0],
     (err) => {
       if (err) return res.send(err);
+
       res.send("Saved 🔥");
     }
   );
@@ -696,7 +697,16 @@ app.post("/save-settings", (req, res) => {
 
 app.get("/settings", (req, res) => {
   db.query("SELECT * FROM settings LIMIT 1", (err, result) => {
-    res.json(result[0] || {});
+    if (err) {
+      return res.status(500).json({ success: false });
+    }
+
+    const settings = result[0] || {};
+
+    res.json({
+      success: true,
+      require_login: settings.require_login === 1
+    });
   });
 });
 
