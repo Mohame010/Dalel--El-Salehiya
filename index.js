@@ -87,9 +87,18 @@ app.listen(PORT, "0.0.0.0", () => {
 // ================= 🔐 Middleware =================
 
 function verifyToken(req, res, next) {
-  const token = req.headers["authorization"];
+  const authHeader = req.headers["authorization"];
 
-  if (!token) return res.status(403).json("No Token ❌");
+  if (!authHeader) {
+    return res.status(403).json("No Token ❌");
+  }
+
+  // 🔥 مهم جدًا
+  const token = authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(403).json("Invalid Token Format ❌");
+  }
 
   jwt.verify(token, SECRET, (err, decoded) => {
     if (err) return res.status(401).json("Invalid Token ❌");
@@ -547,6 +556,35 @@ app.get("/items-with-place", (req, res) => {
 // ================= 👤 Users =================
 
 
+app.delete("/delete-my-account", verifyToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    // 🧹 لو عندك بيانات مرتبطة بالمستخدم احذفها هنا
+    // مثال:
+    // await db.promise().query("DELETE FROM favorites WHERE user_id = ?", [userId]);
+    // await db.promise().query("DELETE FROM orders WHERE user_id = ?", [userId]);
+
+    // ❌ حذف المستخدم
+    await db.promise().query(
+      "DELETE FROM users WHERE id = ?",
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      message: "Account deleted successfully 🔥"
+    });
+
+  } catch (err) {
+    console.log("DELETE ACCOUNT ERROR ❌", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error 💀"
+    });
+  }
+});
 
 
 
