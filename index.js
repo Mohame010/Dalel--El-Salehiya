@@ -829,44 +829,40 @@ app.get("/", (req, res) => {
 
 
 
-app.get("/search", (req, res) => {
+app.get("/search", async (req, res) => {
   const q = req.query.q;
 
   if (!q) {
-    return res.json({ places: [], items: [] });
+    return res.json({ success: true, places: [], items: [] });
   }
 
   const search = `%${q}%`;
 
-  const result = {
-    places: [],
-    items: []
-  };
+  try {
+    // 🔍 البحث في الأماكن
+    const [places] = await db.promise().query(
+      "SELECT * FROM places WHERE name LIKE ?",
+      [search]
+    );
 
-  // 🔍 البحث في الأماكن
-  db.query(
-    "SELECT * FROM places WHERE name LIKE ?",
-    [search],
-    (err, places) => {
-      if (err) return res.status(500).json(err);
+    // 🔍 البحث في المنتجات
+    const [items] = await db.promise().query(
+      "SELECT * FROM items WHERE name LIKE ?",
+      [search]
+    );
 
-      result.places = places;
+    res.json({
+      success: true,
+      places,
+      items,
+    });
 
-      // 🔍 البحث في المنتجات
-      db.query(
-        "SELECT * FROM items WHERE name LIKE ?",
-        [search],
-        (err, items) => {
-          if (err) return res.status(500).json(err);
+  } catch (err) {
+    console.log("SEARCH ERROR ❌", err);
 
-          result.items = items;
-
-          res.json({
-            success: true,
-            ...result
-          });
-        }
-      );
-    }
-  );
+    res.status(500).json({
+      success: false,
+      message: "Search failed 💀"
+    });
+  }
 });
