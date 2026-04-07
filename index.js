@@ -826,3 +826,47 @@ app.get("/", (req, res) => {
   res.send("Backend is running 🔥");
 });
 
+
+
+
+app.get("/search", (req, res) => {
+  const q = req.query.q;
+
+  if (!q) {
+    return res.json({ places: [], items: [] });
+  }
+
+  const search = `%${q}%`;
+
+  const result = {
+    places: [],
+    items: []
+  };
+
+  // 🔍 البحث في الأماكن
+  db.query(
+    "SELECT * FROM places WHERE name LIKE ?",
+    [search],
+    (err, places) => {
+      if (err) return res.status(500).json(err);
+
+      result.places = places;
+
+      // 🔍 البحث في المنتجات
+      db.query(
+        "SELECT * FROM items WHERE name LIKE ?",
+        [search],
+        (err, items) => {
+          if (err) return res.status(500).json(err);
+
+          result.items = items;
+
+          res.json({
+            success: true,
+            ...result
+          });
+        }
+      );
+    }
+  );
+});
