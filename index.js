@@ -25,7 +25,10 @@ const SECRET = process.env.SECRET || "dalel_secret_key";
 
 app.use(cors({
   origin: [
-    "https://admin.dalelsalehiya.shop"
+    "https://admin.dalelsalehiya.shop",
+
+     "http://localhost:54835"
+
   ]
 }));
 app.use(express.json());
