@@ -96,8 +96,10 @@ function verifyToken(req, res, next) {
     return res.status(403).json("No Token ❌");
   }
 
-  // 🔥 مهم جدًا
-  const token = authHeader.split(" ")[1];
+  /// 🔥 FIX هنا
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : authHeader;
 
   if (!token) {
     return res.status(403).json("Invalid Token Format ❌");
