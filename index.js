@@ -447,9 +447,23 @@ app.post("/add-place", verifyToken, isAdmin, (req, res) => {
 
 app.get("/places/:category_id", (req, res) => {
   db.query(
-    "SELECT * FROM places WHERE category_id = ?",
+    `
+    SELECT 
+      p.*,
+      IFNULL(AVG(r.rating), 0) AS rating,
+      COUNT(r.id) AS rating_count
+    FROM places p
+    LEFT JOIN ratings r ON p.id = r.place_id
+    WHERE p.category_id = ?
+    GROUP BY p.id
+    `,
     [req.params.category_id],
     (err, result) => {
+      if (err) {
+        console.log("SQL ERROR ❌", err);
+        return res.status(500).json(err);
+      }
+
       res.json(result);
     }
   );
