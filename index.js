@@ -42,7 +42,7 @@ if (!fs.existsSync(uploadPath)) {
 app.use("/uploads", express.static(uploadPath));
 
 app.get("/", (req, res) => {
-  res.send("انا شغال يا حبيب اخوك🔥⭐");
+  res.send("انا شغال يا حبيب اخوك🔥");
 });
 
 
