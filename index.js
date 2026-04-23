@@ -42,7 +42,7 @@ if (!fs.existsSync(uploadPath)) {
 app.use("/uploads", express.static(uploadPath));
 
 app.get("/", (req, res) => {
-  res.send("انا شغال يا حبيب اخوك🔥");
+  res.send("انا شغال يا حبيب اخوك🔥⭐");
 });
 
 
@@ -868,3 +868,49 @@ app.get("/search", async (req, res) => {
     });
   }
 });
+
+// ================= 🌟⭐ =================
+
+
+app.post("/rate", verifyToken, async (req, res) => {
+  const userId = req.user.id;
+  const { place_id, rating } = req.body;
+
+  try {
+    await db.promise().query(
+      "INSERT INTO ratings (user_id, place_id, rating) VALUES (?, ?, ?)",
+      [userId, place_id, rating]
+    );
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("error");
+  }
+});
+
+
+app.get("/place-rating/:place_id", async (req, res) => {
+  const placeId = req.params.place_id;
+
+  try {
+    const [rows] = await db.promise().query(
+      `
+      SELECT 
+        IFNULL(AVG(rating), 0) AS rating,
+        COUNT(*) AS count
+      FROM ratings
+      WHERE place_id = ?
+      `,
+      [placeId]
+    );
+
+    res.json(rows[0]);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("error");
+  }
+});
+
